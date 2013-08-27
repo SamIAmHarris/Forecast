@@ -2,11 +2,9 @@ package com.udev.locationproject;
 
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.json.JSONObject;
 
@@ -19,14 +17,15 @@ import java.util.TimeZone;
 
 /**
  * Created by Vic on 13/8/26.
+ * ude@learnovatelabs.com
  */
 public class Forecast {
+
     private class FetchDataAsync extends AsyncTask <String, Void, HttpResponse> {
 
         @Override
         protected HttpResponse doInBackground(String... urls) {
             String link = urls[0];
-//            HttpGet request = new HttpGet("https://graph.facebook.com/kalu.v.ude?fields=picture,name");
             HttpGet request = new HttpGet(link);
             AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
             HttpResponse response = null;
@@ -48,18 +47,22 @@ public class Forecast {
             return response;
         }
 
-        protected void onPostExecute(HttpResponse response){
-
+        protected void onPostExecute(HttpResponse res){
+            status = res.getStatusLine().getStatusCode();
+            response = res;
         }
     }
 
     private final String API_URL = "https://api.forecast.io/forecast/";
-    private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
     private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    private String API_KEY;
 
-    JSONObject data;
+    protected int status;
+    private HttpResponse response;
+    protected JSONObject data;
 
-    public Forecast(Double latitude, Double longitude){
+    public Forecast(Double latitude, Double longitude, String API_KEY){
+        this.API_KEY = API_KEY;
         String forecastUrl = buildForecastUrl(latitude, longitude);
         new FetchDataAsync().execute(forecastUrl);
     }
@@ -70,5 +73,17 @@ public class Forecast {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, locale);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         return API_URL + API_KEY + "/" + latitude.toString() + "," + longitude.toString() + "," + sdf.format(new Date());
+    }
+
+    public HttpResponse getResponse() {
+        return response;
+    }
+
+    public JSONObject getData() {
+        return data;
+    }
+
+    public int getStatus() {
+        return status;
     }
 }
