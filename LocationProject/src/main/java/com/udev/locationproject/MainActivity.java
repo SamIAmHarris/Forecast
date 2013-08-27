@@ -13,6 +13,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,6 +48,9 @@ public class MainActivity extends Activity {
     }
 
     private static final String TAG = "MainActivity";
+
+    /* API variables */
+    private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
 
     /* MainActivity variables */
     protected Location location;
@@ -83,7 +88,13 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 if (location != null) {
-                    updateDisplay(new Forecast(MainActivity.this.location.getLatitude(), MainActivity.this.location.getLongitude()));
+                    updateDisplay(
+                            new Forecast(                                   // instantiate a forecast.io forecast
+                                MainActivity.this.location.getLatitude(),   // the Location.getLatitude()
+                                MainActivity.this.location.getLongitude(),  // the Location.getLongitude()
+                                API_KEY                                     // your unique forecast.io api_key
+                            )
+                    );
                     h.removeCallbacks(this);
                 } else {
                     updateForecast();
@@ -102,7 +113,7 @@ public class MainActivity extends Activity {
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (f.data != null) {
+                if (f.getStatus() == HttpStatus.SC_OK) {
                     h.removeCallbacks(this);
                     TextView textView = (TextView) findViewById(R.id.text_view);
                     textView.setText("");
@@ -110,7 +121,7 @@ public class MainActivity extends Activity {
                     try {
                         ListView listView = (ListView)findViewById(R.id.list_view);
 
-                        JSONObject currentForecast = forecast.data.getJSONObject("currently");
+                        JSONObject currentForecast = forecast.getData().getJSONObject("currently");
                         String time = new Date(Long.parseLong(currentForecast.getString("time"))).toString();
                         String[] conditions = new String[]{
                                 time,
