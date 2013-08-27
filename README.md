@@ -12,7 +12,7 @@ Forecast forecast = new Forecast(             /* instantiate a Forecast.io forec
 
 /* use the data */
 
-if(forecast.getStatus == HttpStatus.SC_OK) {
+if(forecast.getStatus() != HttpStatus.SC_OK) {
   /* the data is still being retrieved or there was an error */
 }
 
