@@ -13,10 +13,14 @@
  *   exhaust the Forecast.io 1000 call per day limit.
  */
 
-Forecast forecast = new Forecast(             /* instantiate a Forecast.io forecast */
-  MainActivity.this.location.getLatitude(),   /* the Location.getLatitude() */
-  MainActivity.this.location.getLongitude(),  /* the Location.getLongitude() */
-  API_KEY                                     /* your unique forecast.io api_key */
+/* instantiate a Forecast.io forecast */
+/* the Location.getLatitude() */
+/* the Location.getLongitude() */
+/* your unique forecast.io api_key */
+Forecast forecast = new Forecast(
+  MainActivity.this.location.getLatitude(),
+  MainActivity.this.location.getLongitude(),
+  API_KEY
 )
 
 /* use the data */
