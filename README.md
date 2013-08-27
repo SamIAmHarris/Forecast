@@ -13,20 +13,20 @@
  *   exhaust the Forecast.io 1000 call per day limit.
  */
 
-/* instantiate a Forecast.io forecast */
-/* the Location.getLatitude() */
-/* the Location.getLongitude() */
-/* your unique forecast.io api_key */
+// instantiate a Forecast.io forecast
+// arg1: the Location.getLatitude()
+// arg2: the Location.getLongitude()
+// arg3: your unique forecast.io api_key
 Forecast forecast = new Forecast(
   MainActivity.this.location.getLatitude(),
   MainActivity.this.location.getLongitude(),
   API_KEY
 )
 
-/* use the data */
+// use the data
 
 if(forecast.getStatus() != HttpStatus.SC_OK) {
-  /* the data is still being retrieved or there was an error */
+  // the data is still being retrieved or there was an error
 }
 
 JSONObject currentForecast = forecast.getData().getJSONObject("currently");
