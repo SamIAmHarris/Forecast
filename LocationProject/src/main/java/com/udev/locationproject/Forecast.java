@@ -71,7 +71,7 @@ public class Forecast {
         Locale[] locales = DateFormat.getAvailableLocales();
         Locale locale = (locales.length > 0) ? locales[0] : Locale.US;
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, locale);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        sdf.setTimeZone(TimeZone.getTimeZone(locale.toString()));
         return API_URL + API_KEY + "/" + latitude.toString() + "," + longitude.toString() + "," + sdf.format(new Date());
     }
 

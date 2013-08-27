@@ -18,6 +18,8 @@ import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends Activity {
@@ -122,9 +124,18 @@ public class MainActivity extends Activity {
                         ListView listView = (ListView)findViewById(R.id.list_view);
 
                         JSONObject currentForecast = forecast.getData().getJSONObject("currently");
-                        String time = new Date(Long.parseLong(currentForecast.getString("time"))).toString();
+                        Long time = currentForecast.getLong("time");
+                        SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                        Date formattedTime = new Date();
+
+                        try {
+                            formattedTime = format.parse(time.toString());
+                        } catch(ParseException e) {
+                            e.printStackTrace();
+                        }
+
                         String[] conditions = new String[]{
-                                time,
+                                formattedTime.toString(),
                                 currentForecast.getString("summary"),
                                 currentForecast.getString("precipType"),
                                 currentForecast.getString("temperature"),
