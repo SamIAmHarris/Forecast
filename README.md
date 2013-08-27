@@ -1,7 +1,9 @@
 /* instantiating a Forecast object retrieves data automatically */
 
 /*
- * note: Be sure that your GPS is enabled!!!
+ * notes:
+ * - USE YOUR OWN API KEY!!!
+ * - Be sure that your GPS is enabled!!!
  */
 
 Forecast forecast = new Forecast(             /* instantiate a Forecast.io forecast */
