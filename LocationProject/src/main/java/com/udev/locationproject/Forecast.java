@@ -43,7 +43,10 @@ public class Forecast {
                 }
             } catch(Exception e) {
                 e.printStackTrace();
+            } finally {
+                client.close();
             }
+            client.close();
             return response;
         }
 

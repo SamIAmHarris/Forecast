@@ -13,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,8 +55,8 @@ public class MainActivity extends Activity {
 
     /* MainActivity variables */
     protected Location location;
-    private static long updateForecastDefaultDelay = 5000;
-    private static long updateDisplayDefaultDelay = 1000;
+    private static long retrieveForecastDefaultDelay = 5000;
+    private static long updateViewsDefaultDelay = 1000;
 
     /* loading layout variables */
     private boolean contentLoaded = false;
@@ -77,39 +76,39 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-        updateForecast();
+        retrieveForecastData();
     }
 
     /**
      * waits for location data to be received at some specified interval
      */
-    private void updateForecast(long interval) {
+    private void retrieveForecastData(long interval) {
         final Handler h = new Handler();
         final Location location = this.location;
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (location != null) {
-                    updateDisplay(
+                    updateViews(
                             new Forecast(                                   // instantiate a forecast.io forecast
-                                MainActivity.this.location.getLatitude(),   // the Location.getLatitude()
-                                MainActivity.this.location.getLongitude(),  // the Location.getLongitude()
-                                API_KEY                                     // your unique forecast.io api_key
+                                    MainActivity.this.location.getLatitude(),   // the Location.getLatitude()
+                                    MainActivity.this.location.getLongitude(),  // the Location.getLongitude()
+                                    API_KEY                                     // your unique forecast.io api_key
                             )
                     );
                     h.removeCallbacks(this);
                 } else {
-                    updateForecast();
+                    retrieveForecastData();
                 }
             }
         }, interval); /* todo:simulate a slow network */
     }
 
-    private void updateForecast() {
-        updateForecast(updateForecastDefaultDelay);
+    private void retrieveForecastData() {
+        retrieveForecastData(retrieveForecastDefaultDelay);
     }
 
-    private void updateDisplay(final Forecast forecast, long interval) {
+    private void updateViews(final Forecast forecast, long interval) {
         final Handler h = new Handler();
         final Forecast f = forecast;
         h.postDelayed(new Runnable() {
@@ -137,7 +136,7 @@ public class MainActivity extends Activity {
                         String[] conditions = new String[]{
                                 formattedTime.toString(),
                                 currentForecast.getString("summary"),
-                                currentForecast.getString("precipType"),
+                                //currentForecast.getString("precipType"),
                                 currentForecast.getString("temperature"),
                                 currentForecast.getString("apparentTemperature"),
                                 currentForecast.getString("dewPoint"),
@@ -159,14 +158,14 @@ public class MainActivity extends Activity {
                         e.printStackTrace();
                     }
                 } else {
-                    updateDisplay(f);
+                    updateViews(f);
                 }
             }
         }, interval);
     }
 
-    private void updateDisplay(final Forecast forecast) {
-        updateDisplay(forecast, updateDisplayDefaultDelay);
+    private void updateViews(final Forecast forecast) {
+        updateViews(forecast, updateViewsDefaultDelay);
     }
 
     @Override
