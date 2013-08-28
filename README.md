@@ -8,8 +8,7 @@ notes:
   * uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
   * uses-permission android:name="android.permission.INTERNET"
  *   
- * Calling Forecast's constructor will use your API key. Do not call the constructor in LocationListener.onLocationChanged or you will
- * exhaust the Forecast.io 1000 call per day limit.
+ * Calling Forecast's constructor will use your API key. Do not call the constructor in LocationListener.onLocationChanged or you will exhaust the Forecast.io 1000 call per day limit.
 
 1. instantiate a Forecast.io forecast
 2. arg1: the Location.getLatitude()
