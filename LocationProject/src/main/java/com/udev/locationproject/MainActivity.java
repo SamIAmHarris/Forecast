@@ -126,12 +126,8 @@ public class MainActivity extends Activity {
                         Long time = currentForecast.getLong("time");
                         SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                         Date formattedTime = new Date();
-
-                        try {
-                            formattedTime = format.parse(time.toString());
-                        } catch(ParseException e) {
-                            e.printStackTrace();
-                        }
+                        
+                        formattedTime = format.parse(time.toString());
 
                         String[] conditions = new String[]{
                                 formattedTime.toString(),
@@ -155,6 +151,8 @@ public class MainActivity extends Activity {
                         listView.setAdapter(adapter);
 
                     } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch(ParseException e) {
                         e.printStackTrace();
                     }
                 } else {
