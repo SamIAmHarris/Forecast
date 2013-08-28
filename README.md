@@ -27,7 +27,12 @@ Forecast forecast = new Forecast(
 
 // use the data
 
-if(forecast.getStatus() != HttpStatus.SC_OK) {
+if(forecast.getStatus() == HttpStatus.SC_OK) {
+
+  JSONObject currentForecast = forecast.getData().getJSONObject("currently");
+  Log.i("Forecast.io", currentForecast.getString("summary"));
+  
+} else {
 
   // the data is still being retrieved or there was an error
   
