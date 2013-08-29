@@ -9,8 +9,10 @@ import android.app.Activity;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.apache.http.HttpStatus;
@@ -90,12 +92,13 @@ public class MainActivity extends Activity {
             public void run() {
                 if (location != null) {
                     updateViews(
-                            new Forecast(                                   // instantiate a forecast.io forecast
+                            new Forecast(                                       // instantiate a forecast.io forecast
                                     MainActivity.this.location.getLatitude(),   // the Location.getLatitude()
                                     MainActivity.this.location.getLongitude(),  // the Location.getLongitude()
                                     API_KEY                                     // your unique forecast.io api_key
                             )
                     );
+                    contentLoaded = true;
                     h.removeCallbacks(this);
                 } else {
                     retrieveForecastData();
@@ -116,39 +119,42 @@ public class MainActivity extends Activity {
             public void run() {
                 if (f.getStatus() == HttpStatus.SC_OK) {
                     h.removeCallbacks(this);
-                    TextView textView = (TextView) findViewById(R.id.text_view);
-                    textView.setText("");
+
+                    // hide the loading progress indicator
+                    ProgressBar progressBar = (ProgressBar)findViewById(R.id.loading_spinner);
+                    progressBar.setVisibility(View.GONE);
+
+                    TextView loadingMessage = (TextView)findViewById(R.id.loading_message);
+                    loadingMessage.setVisibility(View.GONE);
 
                     try {
-                        ListView listView = (ListView)findViewById(R.id.list_view);
+                        ListView listView = (ListView) findViewById(R.id.list_view);
 
                         JSONObject currentForecast = forecast.getData().getJSONObject("currently");
                         Long time = currentForecast.getLong("time");
-                        SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                         Date formattedTime = new Date();
 
                         try {
                             formattedTime = format.parse(time.toString());
-                        } catch(ParseException e) {
+                        } catch (ParseException e) {
                             e.printStackTrace();
                         }
 
                         String[] conditions = new String[]{
-                                formattedTime.toString(),
-                                currentForecast.getString("summary"),
-                                //currentForecast.getString("precipType"),
-                                currentForecast.getString("temperature"),
-                                currentForecast.getString("apparentTemperature"),
-                                currentForecast.getString("dewPoint"),
-                                currentForecast.getString("windSpeed"),
-                                currentForecast.getString("windSpeed"),
-                                currentForecast.getString("windBearing"),
-                                currentForecast.getString("windBearing"),
-                                currentForecast.getString("cloudCover"),
-                                currentForecast.getString("humidity"),
-                                currentForecast.getString("pressure"),
-                                currentForecast.getString("visibility"),
-                                currentForecast.getString("ozone")
+                                "Date: " + formattedTime.toString(),
+                                stringValueForKey(currentForecast, "summary", "Summary"),
+                                stringValueForKey(currentForecast, "precipType", "Precipitation Type"),
+                                stringValueForKey(currentForecast, "temperature", "Temperature"),
+                                stringValueForKey(currentForecast, "apparentTemperature", "Feels like"),
+                                stringValueForKey(currentForecast, "dewPoint", "Dew Point"),
+                                stringValueForKey(currentForecast, "windSpeed", "Wind Speed"),
+                                stringValueForKey(currentForecast, "windBearing", "Wind Bearing"),
+                                stringValueForKey(currentForecast, "cloudCover", "Cloud Cover"),
+                                stringValueForKey(currentForecast, "humidity", "Humidity"),
+                                stringValueForKey(currentForecast, "pressure", "Pressure"),
+                                stringValueForKey(currentForecast, "visibility", "Visibility"),
+                                stringValueForKey(currentForecast, "ozone", "Ozone")
                         };
 
                         ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
@@ -173,5 +179,20 @@ public class MainActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    private String stringValueForKey(JSONObject obj, String key) {
+        try {
+            return obj.getString(key);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+        return "None";
+    }
+
+    private String stringValueForKey(JSONObject obj, String key, String label) {
+
+        return label + ": " + stringValueForKey(obj, key);
     }
 }

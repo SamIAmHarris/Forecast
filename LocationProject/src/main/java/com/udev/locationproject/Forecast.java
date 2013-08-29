@@ -71,6 +71,10 @@ public class Forecast {
     }
 
     private String buildForecastUrl(Double latitude, Double longitude) {
+        return API_URL + API_KEY + "/" + latitude.toString() + "," + longitude.toString();
+    }
+
+    private String buildForecastUrlWithDate(Double latitude, Double longitude) {
         Locale[] locales = DateFormat.getAvailableLocales();
         Locale locale = (locales.length > 0) ? locales[0] : Locale.US;
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, locale);
