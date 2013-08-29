@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -61,7 +62,6 @@ public class MainActivity extends Activity {
     private static long updateViewsDefaultDelay = 1000;
 
     /* loading layout variables */
-    private boolean contentLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +78,25 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
+        Button refreshButton = (Button)findViewById(R.id.refresh_button);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                retrieveForecastData();
+                hideUi();
+                showLoadingUi();
+            }
+        });
+
+        hideUi();
         retrieveForecastData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
 
     /**
@@ -90,6 +108,8 @@ public class MainActivity extends Activity {
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
+                hideUi();
+                showLoadingUi();
                 if (location != null) {
                     updateViews(
                             new Forecast(                                       // instantiate a forecast.io forecast
@@ -98,7 +118,6 @@ public class MainActivity extends Activity {
                                     API_KEY                                     // your unique forecast.io api_key
                             )
                     );
-                    contentLoaded = true;
                     h.removeCallbacks(this);
                 } else {
                     retrieveForecastData();
@@ -119,13 +138,6 @@ public class MainActivity extends Activity {
             public void run() {
                 if (f.getStatus() == HttpStatus.SC_OK) {
                     h.removeCallbacks(this);
-
-                    // hide the loading progress indicator
-                    ProgressBar progressBar = (ProgressBar)findViewById(R.id.loading_spinner);
-                    progressBar.setVisibility(View.GONE);
-
-                    TextView loadingMessage = (TextView)findViewById(R.id.loading_message);
-                    loadingMessage.setVisibility(View.GONE);
 
                     try {
                         ListView listView = (ListView) findViewById(R.id.list_view);
@@ -160,6 +172,9 @@ public class MainActivity extends Activity {
                         ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
                         listView.setAdapter(adapter);
 
+                        showUi();
+                        hideLoadingUi();
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -172,13 +187,6 @@ public class MainActivity extends Activity {
 
     private void updateViews(final Forecast forecast) {
         updateViews(forecast, updateViewsDefaultDelay);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
     }
 
     private String stringValueForKey(JSONObject obj, String key) {
@@ -194,5 +202,37 @@ public class MainActivity extends Activity {
     private String stringValueForKey(JSONObject obj, String key, String label) {
 
         return label + ": " + stringValueForKey(obj, key);
+    }
+
+    public void hideUi() {
+        ListView listView = (ListView)findViewById(R.id.list_view);
+        listView.setVisibility(View.GONE);
+
+        Button refreshButton = (Button)findViewById(R.id.refresh_button);
+        refreshButton.setVisibility(View.GONE);
+    }
+
+    public void showUi() {
+        ListView listView = (ListView)findViewById(R.id.list_view);
+        listView.setVisibility(View.VISIBLE);
+
+        Button refreshButton = (Button)findViewById(R.id.refresh_button);
+        refreshButton.setVisibility(View.VISIBLE);
+    }
+
+    public void showLoadingUi() {
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.loading_spinner);
+        progressBar.setVisibility(View.VISIBLE);
+
+        TextView loadingMessage = (TextView) findViewById(R.id.loading_message);
+        loadingMessage.setVisibility(View.VISIBLE);
+    }
+
+    public void hideLoadingUi() {
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.loading_spinner);
+        progressBar.setVisibility(View.GONE);
+
+        TextView loadingMessage = (TextView) findViewById(R.id.loading_message);
+        loadingMessage.setVisibility(View.GONE);
     }
 }
