@@ -137,8 +137,6 @@ public class MainActivity extends Activity {
                                 currentForecast.getString("apparentTemperature"),
                                 currentForecast.getString("dewPoint"),
                                 currentForecast.getString("windSpeed"),
-                                currentForecast.getString("windSpeed"),
-                                currentForecast.getString("windBearing"),
                                 currentForecast.getString("windBearing"),
                                 currentForecast.getString("cloudCover"),
                                 currentForecast.getString("humidity"),
