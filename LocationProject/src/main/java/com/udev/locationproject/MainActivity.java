@@ -134,6 +134,7 @@ public class MainActivity extends Activity {
                         Long time = currentForecast.getLong("time");
                         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                         Date formattedTime = new Date();
+<<<<<<< HEAD
 
                         try {
                             formattedTime = format.parse(time.toString());
@@ -155,12 +156,33 @@ public class MainActivity extends Activity {
                                 stringValueForKey(currentForecast, "pressure", "Pressure"),
                                 stringValueForKey(currentForecast, "visibility", "Visibility"),
                                 stringValueForKey(currentForecast, "ozone", "Ozone")
+=======
+                        
+                        formattedTime = format.parse(time.toString());
+
+                        String[] conditions = new String[]{
+                                formattedTime.toString(),
+                                currentForecast.getString("summary"),
+                                //currentForecast.getString("precipType"),
+                                currentForecast.getString("temperature"),
+                                currentForecast.getString("apparentTemperature"),
+                                currentForecast.getString("dewPoint"),
+                                currentForecast.getString("windSpeed"),
+                                currentForecast.getString("windBearing"),
+                                currentForecast.getString("cloudCover"),
+                                currentForecast.getString("humidity"),
+                                currentForecast.getString("pressure"),
+                                currentForecast.getString("visibility"),
+                                currentForecast.getString("ozone")
+>>>>>>> 28bcf505b1f01bbba4c8617523dccf9d1c03bc61
                         };
 
                         ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
                         listView.setAdapter(adapter);
 
                     } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch(ParseException e) {
                         e.printStackTrace();
                     }
                 } else {
