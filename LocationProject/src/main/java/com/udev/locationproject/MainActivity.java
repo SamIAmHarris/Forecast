@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -101,6 +102,18 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu);
+
+        // Add either a "photo" or "finish" button to the action bar, depending on which page
+        // is currently selected.
+//        MenuItem item = menu.add(Menu.NONE, R.id.action_flip, Menu.NONE,
+//                mShowingBack
+//                        ? R.string.action_photo
+//                        : R.string.action_info);
+//        item.setIcon(mShowingBack
+//                ? R.drawable.ic_action_photo
+//                : R.drawable.ic_action_info);
+//        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         return true;
     }
 
@@ -117,10 +130,10 @@ public class MainActivity extends Activity {
                 showLoadingUi();
                 if (location != null) {
                     updateViews(
-                            new Forecast(                                       // instantiate a forecast.io forecast
-                                    MainActivity.this.location.getLatitude(),   // the Location.getLatitude()
-                                    MainActivity.this.location.getLongitude(),  // the Location.getLongitude()
-                                    API_KEY                                     // your unique forecast.io api_key
+                            new Forecast(                     // instantiate a forecast.io forecast
+                                    location.getLatitude(),   // the Location.getLatitude()
+                                    location.getLongitude(),  // the Location.getLongitude()
+                                    API_KEY                   // your unique forecast.io api_key
                             )
                     );
                     h.removeCallbacks(this);
@@ -145,41 +158,8 @@ public class MainActivity extends Activity {
                     h.removeCallbacks(this);
 
                     try {
-                        ListView listView = (ListView) findViewById(R.id.list_view);
-
                         JSONObject currentForecast = forecast.getData().getJSONObject("currently");
-                        Long time = currentForecast.getLong("time");
-                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                        Date formattedTime = new Date();
-
-                        try {
-                            formattedTime = format.parse(time.toString());
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-
-                        String[] conditions = new String[]{
-                                "Date: " + formattedTime.toString(),
-                                stringValueForKey(currentForecast, "summary", "Summary"),
-                                stringValueForKey(currentForecast, "precipType", "Precipitation Type"),
-                                stringValueForKey(currentForecast, "temperature", "Temperature"),
-                                stringValueForKey(currentForecast, "apparentTemperature", "Feels like"),
-                                stringValueForKey(currentForecast, "dewPoint", "Dew Point"),
-                                stringValueForKey(currentForecast, "windSpeed", "Wind Speed"),
-                                stringValueForKey(currentForecast, "windBearing", "Wind Bearing"),
-                                stringValueForKey(currentForecast, "cloudCover", "Cloud Cover"),
-                                stringValueForKey(currentForecast, "humidity", "Humidity"),
-                                stringValueForKey(currentForecast, "pressure", "Pressure"),
-                                stringValueForKey(currentForecast, "visibility", "Visibility"),
-                                stringValueForKey(currentForecast, "ozone", "Ozone")
-                        };
-
-                        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
-                        listView.setAdapter(adapter);
-
-                        showUi();
-                        hideLoadingUi();
-
+                        parseJsonData(currentForecast);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -239,5 +219,49 @@ public class MainActivity extends Activity {
 
         TextView loadingMessage = (TextView) findViewById(R.id.loading_message);
         loadingMessage.setVisibility(View.GONE);
+    }
+
+    private void parseJsonData(JSONObject data) {
+        ListView listView = (ListView) findViewById(R.id.list_view);
+
+        Long time = new Long(0);
+
+        try {
+            time = data.getLong("time");
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        Date formattedTime = new Date();
+
+        try {
+            formattedTime = format.parse(time.toString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        String[] conditions = new String[]{
+                "Date: " + formattedTime.toString(),
+                stringValueForKey(data, "summary", "Summary"),
+                stringValueForKey(data, "precipType", "Precipitation"),
+                stringValueForKey(data, "temperature", "Temperature"),
+                stringValueForKey(data, "apparentTemperature", "Feels like"),
+                stringValueForKey(data, "dewPoint", "Dew Point"),
+                stringValueForKey(data, "windSpeed", "Wind Speed"),
+                stringValueForKey(data, "windBearing", "Wind Bearing"),
+                stringValueForKey(data, "cloudCover", "Cloud Cover"),
+                stringValueForKey(data, "humidity", "Humidity"),
+                stringValueForKey(data, "pressure", "Pressure"),
+                stringValueForKey(data, "visibility", "Visibility"),
+                stringValueForKey(data, "ozone", "Ozone")
+        };
+
+        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
+        listView.setAdapter(adapter);
+
+        showUi();
+        hideLoadingUi();
+
     }
 }
