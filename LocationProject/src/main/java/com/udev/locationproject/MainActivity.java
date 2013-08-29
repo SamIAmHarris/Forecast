@@ -30,7 +30,11 @@ public class MainActivity extends Activity {
         @Override
         public void onLocationChanged(Location loc) {
 //            Log.i(TAG, location.getLatitude() + ", " + location.getLongitude());
-//            Forecast forecast = new Forecast(location.getLatitude(), location.getLongitude());
+
+            /*  How to burn all of your Forecast.io calls in a few minutes...
+             *  DON'T EVEN THINK ABOUT DOING THIS!!!
+             *  Forecast forecast = new Forecast(location.getLatitude(), location.getLongitude());
+             */
             Log.i(TAG, loc.getLatitude() + "," + loc.getLongitude());
             location = loc;
         }
@@ -59,6 +63,7 @@ public class MainActivity extends Activity {
     /* MainActivity variables */
     protected Location location;
     private static long retrieveForecastDefaultDelay = 5000;
+    private static long retrieveForecastTimeout = 20000;/* todo:timeout if it's taking too long to retrieve the Forecast data */
     private static long updateViewsDefaultDelay = 1000;
 
     /* loading layout variables */
