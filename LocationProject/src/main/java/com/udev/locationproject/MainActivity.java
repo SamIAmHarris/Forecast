@@ -1,16 +1,20 @@
 package com.udev.locationproject;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.app.Activity;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -25,35 +29,51 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity
+        implements FragmentManager.OnBackStackChangedListener, LocationListener {
 
-    private class WeatherListener implements LocationListener {
+    public static class WeatherFragment extends Fragment {
+        public WeatherFragment() {
+
+        }
+
         @Override
-        public void onLocationChanged(Location loc) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_card_front, container, false);
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location loc) {
 //            Log.i(TAG, location.getLatitude() + ", " + location.getLongitude());
 
             /*  How to burn all of your Forecast.io calls in a few minutes...
              *  DON'T EVEN THINK ABOUT DOING THIS!!!
              *  Forecast forecast = new Forecast(location.getLatitude(), location.getLongitude());
              */
-            Log.i(TAG, loc.getLatitude() + "," + loc.getLongitude());
-            location = loc;
-        }
+        Log.i(TAG, loc.getLatitude() + "," + loc.getLongitude());
+        location = loc;
+    }
 
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
 
-        }
+    }
 
-        @Override
-        public void onProviderEnabled(String s) {
+    @Override
+    public void onProviderEnabled(String s) {
 
-        }
+    }
 
-        @Override
-        public void onProviderDisabled(String s) {
+    @Override
+    public void onProviderDisabled(String s) {
 
-        }
+    }
+
+    @Override
+    public void onBackStackChanged() {
+
     }
 
     private static final String TAG = "MainActivity";
@@ -67,7 +87,8 @@ public class MainActivity extends Activity {
     private static long retrieveForecastTimeout = 20000;/* todo:timeout if it's taking too long to retrieve the Forecast data */
     private static long updateViewsDefaultDelay = 1000;
 
-    /* loading layout variables */
+    /* card action variables */
+    private boolean mShowingBack = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +96,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         LocationManager locationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
-        WeatherListener weatherListener = new WeatherListener();
 
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, weatherListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 //            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, weatherListener);
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,6 +116,23 @@ public class MainActivity extends Activity {
 
         hideUi();
         retrieveForecastData();
+
+        if (savedInstanceState == null) {
+            // If there is no saved instance state, add a fragment representing the
+            // front of the card to this activity. If there is saved instance state,
+            // this fragment will have already been added to the activity.
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, new WeatherFragment())
+                    .commit();
+        } else {
+            mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+        }
+
+
+        // Monitor back stack changes to ensure the action bar shows the appropriate
+        // button (either "photo" or "info").
+        getFragmentManager().addOnBackStackChangedListener(this);
     }
 
     @Override
@@ -106,15 +143,29 @@ public class MainActivity extends Activity {
 
         // Add either a "photo" or "finish" button to the action bar, depending on which page
         // is currently selected.
-//        MenuItem item = menu.add(Menu.NONE, R.id.action_flip, Menu.NONE,
-//                mShowingBack
-//                        ? R.string.action_photo
-//                        : R.string.action_info);
-//        item.setIcon(mShowingBack
-//                ? R.drawable.ic_action_photo
-//                : R.drawable.ic_action_info);
-//        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        MenuItem item = menu.add(Menu.NONE, R.id.action_flip, Menu.NONE,
+                mShowingBack
+                        ? R.string.action_weather
+                        : R.string.action_info);
+        item.setIcon(mShowingBack
+                ? R.drawable.ic_collections_cloud
+                : R.drawable.ic_action_info);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // Navigate "up" the demo structure to the launchpad activity.
+                // See http://developer.android.com/design/patterns/navigation.html for more.
+                break;
+            case R.id.action_flip:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -262,6 +313,5 @@ public class MainActivity extends Activity {
 
         showUi();
         hideLoadingUi();
-
     }
 }

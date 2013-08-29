@@ -8,8 +8,8 @@
     <string name="loading_message">Loading...</string>
 
     <!-- Actions -->
-    <string name="action_info">Photo info</string>
-    <string name="action_photo">View photo</string>
+    <string name="action_info">Weather info</string>
+    <string name="action_weather">View weather</string>
 
     <!-- Colors -->
     <color name="text_color">#24B3E3</color>
