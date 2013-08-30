@@ -73,7 +73,10 @@ public class MainActivity extends Activity
 
     @Override
     public void onBackStackChanged() {
+        mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
 
+        // When the back stack changes, invalidate the options menu (action bar).
+        invalidateOptionsMenu();
     }
 
     private static final String TAG = "MainActivity";
