@@ -18,10 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
@@ -35,6 +32,18 @@ public class MainActivity extends Activity
         implements FragmentManager.OnBackStackChangedListener, LocationListener {
 
     private Handler mCardFlipHandler = new Handler();
+
+    public static class WeatherLoadingFragment extends Fragment {
+        public WeatherLoadingFragment() {
+
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_loading_card, container, false);
+        }
+    }
 
     public static class WeatherFrontFragment extends Fragment {
         public WeatherFrontFragment() {
@@ -102,6 +111,7 @@ public class MainActivity extends Activity
 
     /* MainActivity variables */
     protected Location location;
+    JSONObject mData;
     private static long retrieveForecastDefaultDelay = 5000;
     private static long retrieveForecastTimeout = 20000;/* todo:timeout if it's taking too long to retrieve the Forecast data */
     private static long updateViewsDefaultDelay = 1000;
@@ -128,7 +138,6 @@ public class MainActivity extends Activity
             e.printStackTrace();
         }
 
-        //hideUi();
         retrieveForecastData();
 
         if (savedInstanceState == null) {
@@ -137,7 +146,7 @@ public class MainActivity extends Activity
             // this fragment will have already been added to the activity.
             getFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, new WeatherFrontFragment())
+                    .add(R.id.container, new WeatherLoadingFragment())
                     .commit();
         } else {
             mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
@@ -147,16 +156,6 @@ public class MainActivity extends Activity
         // Monitor back stack changes to ensure the action bar shows the appropriate
         // button (either "photo" or "info").
         getFragmentManager().addOnBackStackChangedListener(this);
-
-//        Button refreshButton = (Button)findViewById(R.id.refresh_button);
-//        refreshButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                retrieveForecastData();
-//                hideUi();
-//                showLoadingUi();
-//            }
-//        });
     }
 
     @Override
@@ -241,6 +240,25 @@ public class MainActivity extends Activity
         });
     }
 
+    private void showFrontCard() {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, new WeatherFrontFragment())
+                .addToBackStack(null)
+                .commit();
+
+        // Defer an invalidation of the options menu (on modern devices, the action bar). This
+        // can't be done immediately because the transaction may not yet be committed. Commits
+        // are asynchronous in that they are posted to the main thread's message loop.
+        mCardFlipHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                invalidateOptionsMenu();
+                parseJsonData(mData);
+            }
+        });
+    }
+
     /**
      * waits for location data to be received at some specified interval
      */
@@ -271,46 +289,48 @@ public class MainActivity extends Activity
     }
 
     private void parseJsonData(JSONObject data) {
-//        ListView listView = (ListView) findViewById(R.id.list_view);
-//
-//        Long time = new Long(0);
-//
-//        try {
-//            time = data.getLong("time");
-//        } catch(JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-//        Date formattedTime = new Date();
-//
-//        try {
-//            formattedTime = format.parse(time.toString());
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//
-//        String[] conditions = new String[]{
-//                "Date: " + formattedTime.toString(),
-//                stringValueForKey(data, "summary", "Summary"),
-//                stringValueForKey(data, "precipType", "Precipitation"),
-//                stringValueForKey(data, "temperature", "Temperature"),
-//                stringValueForKey(data, "apparentTemperature", "Feels like"),
-//                stringValueForKey(data, "dewPoint", "Dew Point"),
-//                stringValueForKey(data, "windSpeed", "Wind Speed"),
-//                stringValueForKey(data, "windBearing", "Wind Bearing"),
-//                stringValueForKey(data, "cloudCover", "Cloud Cover"),
-//                stringValueForKey(data, "humidity", "Humidity"),
-//                stringValueForKey(data, "pressure", "Pressure"),
-//                stringValueForKey(data, "visibility", "Visibility"),
-//                stringValueForKey(data, "ozone", "Ozone")
-//        };
-//
-//        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
-//        listView.setAdapter(adapter);
-//
-//        showUi();
-//        hideLoadingUi();
+
+        Long time = new Long(0);
+
+        try {
+            time = data.getLong("time");
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        Date formattedTime = new Date();
+
+        try {
+            formattedTime = format.parse(time.toString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        String[] conditions = new String[]{
+                "Date: " + formattedTime.toString(),
+                stringValueForKey(data, "summary", "Summary"),
+                stringValueForKey(data, "precipType", "Precipitation"),
+                stringValueForKey(data, "temperature", "Temperature"),
+                stringValueForKey(data, "apparentTemperature", "Feels like"),
+                stringValueForKey(data, "dewPoint", "Dew Point"),
+                stringValueForKey(data, "windSpeed", "Wind Speed"),
+                stringValueForKey(data, "windBearing", "Wind Bearing"),
+                stringValueForKey(data, "cloudCover", "Cloud Cover"),
+                stringValueForKey(data, "humidity", "Humidity"),
+                stringValueForKey(data, "pressure", "Pressure"),
+                stringValueForKey(data, "visibility", "Visibility"),
+                stringValueForKey(data, "ozone", "Ozone")
+        };
+
+        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
+
+        try {
+            ListView listView = (ListView) findViewById(R.id.list_view);
+            listView.setAdapter(adapter);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateViews(final Forecast forecast, long interval) {
@@ -323,8 +343,8 @@ public class MainActivity extends Activity
                     h.removeCallbacks(this);
 
                     try {
-                        JSONObject currentForecast = forecast.getData().getJSONObject("currently");
-                        parseJsonData(currentForecast);
+                        mData = forecast.getData().getJSONObject("currently");
+                        showFrontCard();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -353,37 +373,5 @@ public class MainActivity extends Activity
     private String stringValueForKey(JSONObject obj, String key, String label) {
 
         return label + ": " + stringValueForKey(obj, key);
-    }
-
-    public void hideUi() {
-        ListView listView = (ListView)findViewById(R.id.list_view);
-        listView.setVisibility(View.GONE);
-
-        Button refreshButton = (Button)findViewById(R.id.refresh_button);
-        refreshButton.setVisibility(View.GONE);
-    }
-
-    public void showUi() {
-        ListView listView = (ListView)findViewById(R.id.list_view);
-        listView.setVisibility(View.VISIBLE);
-
-        Button refreshButton = (Button)findViewById(R.id.refresh_button);
-        refreshButton.setVisibility(View.VISIBLE);
-    }
-
-    public void showLoadingUi() {
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.loading_spinner);
-        progressBar.setVisibility(View.VISIBLE);
-
-        TextView loadingMessage = (TextView) findViewById(R.id.loading_message);
-        loadingMessage.setVisibility(View.VISIBLE);
-    }
-
-    public void hideLoadingUi() {
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.loading_spinner);
-        progressBar.setVisibility(View.GONE);
-
-        TextView loadingMessage = (TextView) findViewById(R.id.loading_message);
-        loadingMessage.setVisibility(View.GONE);
     }
 }

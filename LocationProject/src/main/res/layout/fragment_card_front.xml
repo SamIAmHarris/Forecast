@@ -11,25 +11,6 @@
     tools:context=".MainActivity"
     android:background="#000000" >
 
-    <!-- The "loading indicator" view. This view overlaps with
-         the content, so the visibility of these two views
-         should be mutually exclusive. -->
-    <TextView android:id="@+id/loading_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/loading_message"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/loading_spinner"
-        android:textColor="@color/text_color" />
-
-    <ProgressBar android:id="@+id/loading_spinner"
-        style="?android:progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
-
     <ListView
         android:id="@+id/list_view"
         android:layout_width="wrap_content"
@@ -44,6 +25,6 @@
         android:layout_below="@id/list_view"
         android:textColor="#ffffff"
         android:hint="@string/refresh_hint"
-        android:layout_toEndOf="@id/loading_spinner" />
+        android:layout_alignBottom="@id/list_view" />
 
 </RelativeLayout>
