@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,8 +34,10 @@ import java.util.Date;
 public class MainActivity extends Activity
         implements FragmentManager.OnBackStackChangedListener, LocationListener {
 
-    public static class WeatherFragment extends Fragment {
-        public WeatherFragment() {
+    private Handler mCardFlipHandler = new Handler();
+
+    public static class WeatherFrontFragment extends Fragment {
+        public WeatherFrontFragment() {
 
         }
 
@@ -41,6 +45,18 @@ public class MainActivity extends Activity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_card_front, container, false);
+        }
+    }
+
+    public static class WeatherBackFragment extends Fragment {
+        public WeatherBackFragment() {
+
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_card_back, container, false);
         }
     }
 
@@ -96,28 +112,23 @@ public class MainActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_card_flip);
 
         LocationManager locationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, weatherListener);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        Button refreshButton = (Button)findViewById(R.id.refresh_button);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                retrieveForecastData();
-                hideUi();
-                showLoadingUi();
-            }
-        });
+        try {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        hideUi();
+        //hideUi();
         retrieveForecastData();
 
         if (savedInstanceState == null) {
@@ -126,7 +137,7 @@ public class MainActivity extends Activity
             // this fragment will have already been added to the activity.
             getFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, new WeatherFragment())
+                    .add(R.id.container, new WeatherFrontFragment())
                     .commit();
         } else {
             mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
@@ -136,6 +147,16 @@ public class MainActivity extends Activity
         // Monitor back stack changes to ensure the action bar shows the appropriate
         // button (either "photo" or "info").
         getFragmentManager().addOnBackStackChangedListener(this);
+
+//        Button refreshButton = (Button)findViewById(R.id.refresh_button);
+//        refreshButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                retrieveForecastData();
+//                hideUi();
+//                showLoadingUi();
+//            }
+//        });
     }
 
     @Override
@@ -163,12 +184,61 @@ public class MainActivity extends Activity
             case android.R.id.home:
                 // Navigate "up" the demo structure to the launchpad activity.
                 // See http://developer.android.com/design/patterns/navigation.html for more.
+                NavUtils.navigateUpTo(this, new Intent(this, MainActivity.class));
                 break;
             case R.id.action_flip:
+                flipCard();
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void flipCard() {
+        if (mShowingBack) {
+            getFragmentManager().popBackStack();
+            return;
+        }
+
+        // Flip to the back.
+
+        mShowingBack = true;
+
+        // Create and commit a new fragment transaction that adds the fragment for the back of
+        // the card, uses custom animations, and is part of the fragment manager's back stack.
+
+        getFragmentManager()
+                .beginTransaction()
+
+                        // Replace the default fragment animations with animator resources representing
+                        // rotations when switching to the back of the card, as well as animator
+                        // resources representing rotations when flipping back to the front (e.g. when
+                        // the system Back button is pressed).
+                .setCustomAnimations(
+                        R.animator.card_flip_right_in, R.animator.card_flip_right_out,
+                        R.animator.card_flip_left_in, R.animator.card_flip_left_out)
+
+                        // Replace any fragments currently in the container view with a fragment
+                        // representing the next page (indicated by the just-incremented currentPage
+                        // variable).
+                .replace(R.id.container, new WeatherBackFragment())
+
+                        // Add this transaction to the back stack, allowing users to press Back
+                        // to get to the front of the card.
+                .addToBackStack(null)
+
+                        // Commit the transaction.
+                .commit();
+
+        // Defer an invalidation of the options menu (on modern devices, the action bar). This
+        // can't be done immediately because the transaction may not yet be committed. Commits
+        // are asynchronous in that they are posted to the main thread's message loop.
+        mCardFlipHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                invalidateOptionsMenu();
+            }
+        });
     }
 
     /**
@@ -180,8 +250,6 @@ public class MainActivity extends Activity
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
-                hideUi();
-                showLoadingUi();
                 if (location != null) {
                     updateViews(
                             new Forecast(                     // instantiate a forecast.io forecast
@@ -200,6 +268,49 @@ public class MainActivity extends Activity
 
     private void retrieveForecastData() {
         retrieveForecastData(retrieveForecastDefaultDelay);
+    }
+
+    private void parseJsonData(JSONObject data) {
+//        ListView listView = (ListView) findViewById(R.id.list_view);
+//
+//        Long time = new Long(0);
+//
+//        try {
+//            time = data.getLong("time");
+//        } catch(JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+//        Date formattedTime = new Date();
+//
+//        try {
+//            formattedTime = format.parse(time.toString());
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String[] conditions = new String[]{
+//                "Date: " + formattedTime.toString(),
+//                stringValueForKey(data, "summary", "Summary"),
+//                stringValueForKey(data, "precipType", "Precipitation"),
+//                stringValueForKey(data, "temperature", "Temperature"),
+//                stringValueForKey(data, "apparentTemperature", "Feels like"),
+//                stringValueForKey(data, "dewPoint", "Dew Point"),
+//                stringValueForKey(data, "windSpeed", "Wind Speed"),
+//                stringValueForKey(data, "windBearing", "Wind Bearing"),
+//                stringValueForKey(data, "cloudCover", "Cloud Cover"),
+//                stringValueForKey(data, "humidity", "Humidity"),
+//                stringValueForKey(data, "pressure", "Pressure"),
+//                stringValueForKey(data, "visibility", "Visibility"),
+//                stringValueForKey(data, "ozone", "Ozone")
+//        };
+//
+//        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
+//        listView.setAdapter(adapter);
+//
+//        showUi();
+//        hideLoadingUi();
     }
 
     private void updateViews(final Forecast forecast, long interval) {
@@ -232,6 +343,7 @@ public class MainActivity extends Activity
         try {
             return obj.getString(key);
         } catch(JSONException e) {
+            Log.e(TAG, "stringValueForKey could not parse key \"" + key + "\"");
             e.printStackTrace();
         }
 
@@ -273,48 +385,5 @@ public class MainActivity extends Activity
 
         TextView loadingMessage = (TextView) findViewById(R.id.loading_message);
         loadingMessage.setVisibility(View.GONE);
-    }
-
-    private void parseJsonData(JSONObject data) {
-        ListView listView = (ListView) findViewById(R.id.list_view);
-
-        Long time = new Long(0);
-
-        try {
-            time = data.getLong("time");
-        } catch(JSONException e) {
-            e.printStackTrace();
-        }
-
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        Date formattedTime = new Date();
-
-        try {
-            formattedTime = format.parse(time.toString());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        String[] conditions = new String[]{
-                "Date: " + formattedTime.toString(),
-                stringValueForKey(data, "summary", "Summary"),
-                stringValueForKey(data, "precipType", "Precipitation"),
-                stringValueForKey(data, "temperature", "Temperature"),
-                stringValueForKey(data, "apparentTemperature", "Feels like"),
-                stringValueForKey(data, "dewPoint", "Dew Point"),
-                stringValueForKey(data, "windSpeed", "Wind Speed"),
-                stringValueForKey(data, "windBearing", "Wind Bearing"),
-                stringValueForKey(data, "cloudCover", "Cloud Cover"),
-                stringValueForKey(data, "humidity", "Humidity"),
-                stringValueForKey(data, "pressure", "Pressure"),
-                stringValueForKey(data, "visibility", "Visibility"),
-                stringValueForKey(data, "ozone", "Ozone")
-        };
-
-        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.weather_info, conditions);
-        listView.setAdapter(adapter);
-
-        showUi();
-        hideLoadingUi();
     }
 }

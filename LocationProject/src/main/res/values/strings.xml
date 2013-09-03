@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Simply the weather</string>
+    <string name="app_name">io</string>
     <string name="action_settings">Settings</string>
     <string name="refresh_button_text">Refresh</string>
     <string name="refresh_hint">Press to refresh</string>
     <string name="loading_message">Loading...</string>
+    <string name="card_back_description">Yo dawg, I heard you like weather an shit...</string>
+    <string name="card_back_title">Weather Details</string>
 
     <!-- Actions -->
     <string name="action_info">Weather info</string>
     <string name="action_weather">View weather</string>
-
-    <!-- Colors -->
-    <color name="text_color">#24B3E3</color>
 </resources>
