@@ -69,41 +69,6 @@ public class MainActivity extends Activity
         }
     }
 
-    @Override
-    public void onLocationChanged(Location loc) {
-//            Log.i(TAG, location.getLatitude() + ", " + location.getLongitude());
-
-            /*  How to burn all of your Forecast.io calls in a few minutes...
-             *  DON'T EVEN THINK ABOUT DOING THIS!!!
-             *  Forecast forecast = new Forecast(location.getLatitude(), location.getLongitude());
-             */
-        Log.i(TAG, loc.getLatitude() + "," + loc.getLongitude());
-        location = loc;
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
-    }
-
-    @Override
-    public void onBackStackChanged() {
-        mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
-
-        // When the back stack changes, invalidate the options menu (action bar).
-        invalidateOptionsMenu();
-    }
-
     private static final String TAG = "MainActivity";
 
     /* API variables */
@@ -193,6 +158,41 @@ public class MainActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onLocationChanged(Location loc) {
+//            Log.i(TAG, location.getLatitude() + ", " + location.getLongitude());
+
+            /*  How to burn all of your Forecast.io calls in a few minutes...
+             *  DON'T EVEN THINK ABOUT DOING THIS!!!
+             *  Forecast forecast = new Forecast(location.getLatitude(), location.getLongitude());
+             */
+        Log.i(TAG, loc.getLatitude() + "," + loc.getLongitude());
+        location = loc;
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
+    @Override
+    public void onBackStackChanged() {
+        mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+
+        // When the back stack changes, invalidate the options menu (action bar).
+        invalidateOptionsMenu();
+    }
+
     private void flipCard() {
         if (mShowingBack) {
             getFragmentManager().popBackStack();
@@ -244,7 +244,6 @@ public class MainActivity extends Activity
         getFragmentManager()
                 .beginTransaction()
                 .replace(R.id.container, new WeatherFrontFragment())
-                .addToBackStack(null)
                 .commit();
 
         // Defer an invalidation of the options menu (on modern devices, the action bar). This

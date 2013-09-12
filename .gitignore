@@ -35,6 +35,7 @@ proguard/
 .idea/
 .gradle/
 /*/local.properties
+build/
 */build/
 /*/*/build/
 /*/*/production
